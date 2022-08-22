@@ -16,21 +16,18 @@ pipeline {
     }
 
     stages {
-            stage("BUILD APP + UNIT TEST"){
-                when { expression { env.GIT_BRANCH != 'feature' }}
-                steps{
-                    script{
-                        // withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
-                        //     git url: 'https://github.com/RotemK1/todo-docker.git'
-                                //app_todo = docker.build('rotem-todo-app')
-                                sh "docker-compose up --build -d"
-                                sh "curl app_container:5000"
-                                //sh "timeout 60 wget --retry-connrefused --tries=60 --waitretry=2 -q app_container:5000 -O /dev/null"
-                            
-                          //      sh"docker run -d --name rotem-todo-app --network workspace rotem-todo-app"
-                    }
-                }
-            }
+            // stage("BUILD APP + UNIT TEST"){
+            //     when { expression { env.GIT_BRANCH != 'feature' }}
+            //     steps{
+            //         script{
+            //             // withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
+            //             //     git url: 'https://github.com/RotemK1/todo-docker.git'
+            //                     //app_todo = docker.build('rotem-todo-app')
+            //                     sh "docker-compose up --build -d"
+            //                     sh "timeout 60 wget --retry-connrefused --tries=60 --waitretry=2 -q app_container:5000 -O /dev/null"
+            //         }
+            //     }
+            // }
         
 
         // stage('E2E'){
@@ -49,28 +46,34 @@ pipeline {
         // }
 
 
-        // stage('TAG & PUBLISH '){
-        //     when { expression { env.GIT_BRANCH == 'master' }}
-        //     steps{
-        //         echo "#########################################"
-        //         echo "           TAGGING AND PUBLISH          "
-        //         echo "#########################################"
+        stage('TAG & PUBLISH '){
+            when { expression { env.GIT_BRANCH == 'master' }}
+            steps{
+                echo "#########################################"
+                echo "           TAGGING AND PUBLISH          "
+                echo "#########################################"
 
-        //         script{
-        //             withCredentials([[
-        //                 $class: 'AmazonWebServicesCredentialsBinding',
-        //                 credentialsId: "aws_account",
-        //                 accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-        //                 secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-        //             ]]) {
-        //                 sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 644435390668.dkr.ecr.us-east-1.amazonaws.com"
-        //                 docker.withRegistry("644435390668.dkr.ecr.us-east-1.amazonaws.com/rotem-todo-app", "ecr:eu-west-1:rotem_aws_credentials"){
-        //                 app_toxic.push("${TAG}")}
-        //                 }
-        //             }
-        //         }        
-        //     }
-        // }
+                script{
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: "aws_account",
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ]]) {
+                        sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 644435390668.dkr.ecr.us-east-1.amazonaws.com"
+                        NEW_TAG = (script: "aws ecr list-images --repository-name rotem-todo-app --filter --region us-east-1 tagStatus=TAGGED | grep imageTag | awk ' { print $2 } ' |sort -r | head -1 | sed 's/\"//g' |tr "." " " | awk ' { print $1 "." $2 "." $3+1 } '", returnStdout: true).trim()
+                        if (NEW_TAG.isEmpty()){
+                            NEW_TAG = "1.0.0"        
+                        }
+                        
+                        app_todo = docker.build('rotem-todo-app')
+                        docker.withRegistry("644435390668.dkr.ecr.us-east-1.amazonaws.com/rotem-todo-app", "ecr:eu-west-1:rotem_aws_credentials"){
+                        app_toxic.push("${NEW_TAG}")}
+                        }
+                    }
+                }        
+            }
+        }
 
         // stage("BUILD APP"){
         //     when { expression { env.GIT_BRANCH == 'master' }}
