@@ -13,6 +13,8 @@ services:
       - MONGO_PORT=27017
     depends_on:
       - mongo
+    networks:
+      - workspace
 
   # nginx:
   #   image: nginx:alpine
@@ -33,6 +35,11 @@ services:
       - flaskapp:/data/db/
     ports:
       - 27017:27017
+    networks:
+      - workspace
+
+networks:
+  workspace:
 
 volumes:
   flaskapp:
