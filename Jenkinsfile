@@ -19,7 +19,7 @@ pipeline {
             stage("BUILD APP"){
                 steps{
                     script{
-                        withCredentials([usernamePassword(credentialsId: 'jenkins_gitlab_username', passwordVariable: 'password', usernameVariable: 'username')]) {
+                        withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
                             git url: 'https://github.com/RotemK1/todo-docker.git'
                                 app_todo = docker.build('rotem-todo-app')
                                 sh"docker run -d --name rotem-todo-app --network workspace rotem-todo-app"
@@ -67,7 +67,7 @@ pipeline {
         //         script{
         //             withCredentials([[
         //                 $class: 'AmazonWebServicesCredentialsBinding',
-        //                 credentialsId: "rotem_aws_credentials",
+        //                 credentialsId: "aws_account",
         //                 accessKeyVariable: 'AWS_ACCESS_KEY_ID',
         //                 secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
         //             ]]) {
@@ -84,7 +84,7 @@ pipeline {
         //     when { expression { env.GIT_BRANCH == 'master' }}
         //     steps{
         //         script{
-        //             withCredentials([usernamePassword(credentialsId: 'jenkins_gitlab_username', passwordVariable: 'password', usernameVariable: 'username')]) {
+        //             withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
         //                 git url: 'https://github.com/RotemK1/app-helm.git'
         //                 // sed and switch and helm with diffrent tag in values
         //             }
