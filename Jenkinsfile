@@ -24,7 +24,8 @@ pipeline {
                         //     git url: 'https://github.com/RotemK1/todo-docker.git'
                                 //app_todo = docker.build('rotem-todo-app')
                                 sh "docker-compose up --build -d"
-                                sh "timeout 60 wget --retry-connrefused --tries=60 --waitretry=2 -q app_container:5000 -O /dev/null"
+                                sh "curl app_container:5000"
+                                //sh "timeout 60 wget --retry-connrefused --tries=60 --waitretry=2 -q app_container:5000 -O /dev/null"
                             
                           //      sh"docker run -d --name rotem-todo-app --network workspace rotem-todo-app"
                     }
