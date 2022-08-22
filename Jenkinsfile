@@ -17,11 +17,11 @@ pipeline {
 
     stages {
             stage("BUILD APP + UNIT TEST"){
-                //when { expression { env.GIT_BRANCH != 'feature' }}
+                when { expression { env.GIT_BRANCH != 'feature' }}
                 steps{
                     script{
-                        withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
-                            git url: 'https://github.com/RotemK1/todo-docker.git'
+                        // withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
+                        //     git url: 'https://github.com/RotemK1/todo-docker.git'
                                 //app_todo = docker.build('rotem-todo-app')
                                 sh "docker-compose up -d"
                                 sh "timeout 60 wget --retry-connrefused --tries=60 --waitretry=2 -q rotem-todo-app:5000 -O /dev/null"
