@@ -80,15 +80,21 @@ pipeline {
             when { expression { env.GIT_BRANCH == 'master' }}
             steps{
                 script{
+                    
                     withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
-                        git url: 'https://github.com/RotemK1/app-helm.git'
+                        //git url: 'https://github.com/RotemK1/app-helm.git'
                         sh  """ #!/bin/bash
+                                mkdir helm-git && cd helm-git
+                                git submodule add  https://${username}:${password}@github.com/RotemK1/app-helm.git app-helm
+                                ls -laF
+                                cd app-helm
+                                git config --global user.email "rotem.devops.test@gmail.com"
+                                git config --global user.name "Jenkins"
                                 echo flaskapp.image.tag: "${NEW_TAG}" > ./flask-app/new_tag.yaml
                                 git tag ${NEW_TAG}
                                 git add .
-                                git commit -am "added new tag -${NEW_TAG}
-                            
-                                git push https://${username}:${password}@github.com/RotemK1/app-helm.git --follow-tags -f
+                                git commit -am "added new version: ${NEW_TAG}"
+                                git push https://${username}:${password}@github.com/RotemK1/app-helm.git --follow-tags
                             """
                             //    git push https://${username}:${password}@github.com/RotemK1/app-helm.git --tag
                     }
