@@ -72,7 +72,12 @@ pipeline {
                             }
                         }
                     }
-                }        
+
+                    withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
+                                sh "git tag ${NEW_TAG}"
+                                sh "git push https://${username}:${password}@github.com/RotemK1/app-helm.git --tag"
+                    }        
+                }
             }
         }
 
@@ -80,7 +85,6 @@ pipeline {
             when { expression { env.GIT_BRANCH == 'master' }}
             steps{
                 script{
-                    
                     withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
                         //git url: 'https://github.com/RotemK1/app-helm.git'
                         sh  """ #!/bin/bash
@@ -96,14 +100,13 @@ pipeline {
                                 git commit -am "added new version: ${NEW_TAG}"
                                 git push https://${username}:${password}@github.com/RotemK1/app-helm.git --follow-tags
                             """
-                            //    git push https://${username}:${password}@github.com/RotemK1/app-helm.git --tag
                     }
                 } 
             } 
         }
     }
 
-  post {
+    post {
         always {
             sh "docker-compose down"
         }
@@ -128,5 +131,5 @@ pipeline {
         success {
             echo 'I succeeded!'
         }
-  }
+    }
 }
