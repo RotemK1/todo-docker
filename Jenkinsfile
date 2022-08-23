@@ -82,6 +82,7 @@ pipeline {
         }
 
         stage("Deploy"){
+            
             when { expression { env.GIT_BRANCH == 'master' }}
             steps{
                 script{
