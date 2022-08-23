@@ -75,7 +75,7 @@ pipeline {
 
                     withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
                                 sh "git tag ${NEW_TAG}"
-                                sh "git push https://${username}:${password}@github.com/RotemK1/app-helm.git --tag"
+                                sh "git push https://${username}:${password}@github.com/RotemK1/todo-docker.git --tag"
                     }        
                 }
             }
