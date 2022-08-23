@@ -61,7 +61,7 @@ pipeline {
                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
                     ]]) {
                         //sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 644435390668.dkr.ecr.us-east-1.amazonaws.com"
-                        NEW_TAG = sh(script: "aws ecr list-images --repository-name rotem-todo-app --filter --region us-east-1 tagStatus=TAGGED | grep imageTag | awk ' { print \$2 } ' |sort -r | head -1 | sed 's/\"//g' |tr \".\" \" \" | awk ' { print \$1 \".\" \$2 \".\" \$3+1 } '", returnStdout: true).trim()
+                        NEW_TAG = sh(script: "aws ecr list-images --repository-name rotem-todo-app --filter --region us-east-1 tagStatus=TAGGED | grep imageTag | awk ' { print \$2 } ' |sort -V | tail -1 | sed 's/\"//g' |tr \".\" \" \" | awk ' { print \$1 \".\" \$2 \".\" \$3+1 } '", returnStdout: true).trim()
                         docker.withRegistry("https://644435390668.dkr.ecr.us-east-1.amazonaws.com/rotem-todo-app", "ecr:us-east-1:aws_account"){
                             app_todo = docker.build('rotem-todo-app')
                             if (NEW_TAG.isEmpty()){
@@ -76,7 +76,7 @@ pipeline {
             }
         }
 
-        stage("BUILD APP"){
+        stage("Deploy"){
             when { expression { env.GIT_BRANCH == 'master' }}
             steps{
                 script{
