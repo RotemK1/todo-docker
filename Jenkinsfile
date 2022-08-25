@@ -30,80 +30,87 @@ pipeline {
             // }
         
 
-        // stage('E2E'){
-        //     when { expression { env.GIT_BRANCH == 'feature' }}
-        //     steps{
-        //         echo "#########################################"
-        //         echo "                 E2E                     "
-        //         echo "#########################################"
-        //         script{
-        //                 sh "docker-compose up -d"
-
-        //                 // TO DO TESTING WITH POST, GET, DELETE.
-
-        //         }
-        //     }
-        // }
-
-
-        stage('TAG & PUBLISH '){
-            when { expression { env.GIT_BRANCH == 'master' }}
+        stage('E2E'){
+            when { expression { env.GIT_BRANCH == 'feature' }}
             steps{
                 echo "#########################################"
-                echo "           TAGGING AND PUBLISH          "
+                echo "                 E2E                     "
                 echo "#########################################"
-
                 script{
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: "aws_account",
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                        // NEW_TAG = calculate next image tag from ecr repo "rotem-todo-app" in region us-east-1
-                        NEW_TAG = sh(script: "aws ecr list-images --repository-name rotem-todo-app --filter --region us-east-1 tagStatus=TAGGED | grep imageTag | awk ' { print \$2 } ' |sort -V | tail -1 | sed 's/\"//g' |tr \".\" \" \" | awk ' { print \$1 \".\" \$2 \".\" \$3+1 } '", returnStdout: true).trim()
-                        docker.withRegistry("https://644435390668.dkr.ecr.us-east-1.amazonaws.com/rotem-todo-app", "ecr:us-east-1:aws_account"){
-                            app_todo = docker.build('rotem-todo-app')
-                            if (NEW_TAG.isEmpty()){
-                                app_todo.push("1.0.0")
-
-                            }else{
-                                app_todo.push("${NEW_TAG}")
-                            }
-                        }
-                    }
-
-                    withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
-                                sh "git tag ${NEW_TAG}"
-                                sh "git push https://${username}:${password}@github.com/RotemK1/todo-docker.git --tag"
-                    }        
+                            // curl list = list of curl testing with GET , POST
+                        sh  ''' #!/bin/bash
+                                docker-compose up --build -d"
+                                declare -a curl_list=(`curl -sL -w "%{http_code}" -I "localhost:5000/search?refer=curltest" -o /dev/null` `curl -sL -w "%{http_code}" -I "localhost:    5000/list" -o /dev/null` `curl -sL -w "%{http_code}" -I "localhost:5000" -o /dev/null` `curl -sL -w "%{http_code}" -I -X POST "localhost:5000/action    ?name=tat&desc=11" -o /dev/null`)
+                                for status_code in "${curl_list[@]}";do
+                                        if (($status_code >= 200 && $status_code < 400));then
+                                                echo $status_code
+                                        else
+                                            exit 1
+                                        fi
+                                done
+                            '''
                 }
             }
         }
 
-        stage("Deploy"){
-            when { expression { env.GIT_BRANCH == 'master' }}
-            steps{
-                script{
-                    withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
-                        //git url: 'https://github.com/RotemK1/app-helm.git'
-                        sh  """ #!/bin/bash
-                                mkdir helm-git && cd helm-git
-                                git submodule add  https://${username}:${password}@github.com/RotemK1/app-helm.git app-helm
-                                ls -laF
-                                cd app-helm
-                                yq -i '.flaskapp.image.tag = "${NEW_TAG}"' ./flask-app/values.yaml
+        // stage('TAG & PUBLISH '){
+        //     when { expression { env.GIT_BRANCH == 'master' }}
+        //     steps{
+        //         echo "#########################################"
+        //         echo "           TAGGING AND PUBLISH          "
+        //         echo "#########################################"
+
+        //         script{
+        //             withCredentials([[
+        //                 $class: 'AmazonWebServicesCredentialsBinding',
+        //                 credentialsId: "aws_account",
+        //                 accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+        //                 secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        //             ]]) {
+        //                 // NEW_TAG = calculate next image tag from ecr repo "rotem-todo-app" in region us-east-1
+        //                 NEW_TAG = sh(script: "aws ecr list-images --repository-name rotem-todo-app --filter --region us-east-1 tagStatus=TAGGED | grep imageTag | awk ' { print \$2 } ' |sort -V | tail -1 | sed 's/\"//g' |tr \".\" \" \" | awk ' { print \$1 \".\" \$2 \".\" \$3+1 } '", returnStdout: true).trim()
+        //                 docker.withRegistry("https://644435390668.dkr.ecr.us-east-1.amazonaws.com/rotem-todo-app", "ecr:us-east-1:aws_account"){
+        //                     app_todo = docker.build('rotem-todo-app')
+        //                     if (NEW_TAG.isEmpty()){
+        //                         app_todo.push("1.0.0")
+
+        //                     }else{
+        //                         app_todo.push("${NEW_TAG}")
+        //                     }
+        //                 }
+        //             }
+
+        //             withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
+        //                         sh "git tag ${NEW_TAG}"
+        //                         sh "git push https://${username}:${password}@github.com/RotemK1/todo-docker.git --tag"
+        //             }        
+        //         }
+        //     }
+        // }
+
+        // stage("Deploy"){
+        //     when { expression { env.GIT_BRANCH == 'master' }}
+        //     steps{
+        //         script{
+        //             withCredentials([usernamePassword(credentialsId: 'git_https_account', passwordVariable: 'password', usernameVariable: 'username')]) {
+        //                 //git url: 'https://github.com/RotemK1/app-helm.git'
+        //                 sh  """ #!/bin/bash
+        //                         mkdir helm-git && cd helm-git
+        //                         git submodule add  https://${username}:${password}@github.com/RotemK1/app-helm.git app-helm
+        //                         ls -laF
+        //                         cd app-helm
+        //                         yq -i '.flaskapp.image.tag = "${NEW_TAG}"' ./flask-app/values.yaml
                                 
-                                git tag ${NEW_TAG}
-                                git add .
-                                git commit -am "added new version: ${NEW_TAG}"
-                                git push https://${username}:${password}@github.com/RotemK1/app-helm.git --follow-tags
-                            """
-                    }
-                    //echo flaskapp.image.tag: "${NEW_TAG}" > ./flask-app/new_tag.yaml
-                } 
-            } 
-        }
+        //                         git tag ${NEW_TAG}
+        //                         git add .
+        //                         git commit -am "added new version: ${NEW_TAG}"
+        //                         git push https://${username}:${password}@github.com/RotemK1/app-helm.git --follow-tags
+        //                     """
+        //             }
+        //             //echo flaskapp.image.tag: "${NEW_TAG}" > ./flask-app/new_tag.yaml
+        //         } 
+        //     } 
+        // }
     }
 
     post {
