@@ -40,9 +40,8 @@ pipeline {
                             // curl list = list of curl testing with GET , POST
                         sh  ''' #!/bin/bash
                                 docker-compose up --build -d
-                                ./e2e.sh
                             '''
-                            
+
                 }
             }
         }
