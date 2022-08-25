@@ -9,7 +9,7 @@
 #         fi
 # done
 website="app_container:5000"
-curl_list="$website:5000/search?refer=curltest", "$website:5000/list", "-X POST $website/action?name=tat&desc=11"
+curl_list="$website:5000/search?refer=curltest", "$website/list", "-X POST $website/action?name=tat&desc=11"
 
 for action in ${curl_list[*]};do
         status_code = `curl -sL -w '%{http_code}' -I $action -o /dev/null`
