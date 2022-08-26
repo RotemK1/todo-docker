@@ -100,18 +100,18 @@ pipeline {
     post {
         always {
             sh "docker-compose down"
+            emailext (
+                to:      "rotem.devops.test@gmail.com",
+                subject: "Jenkins - ${env.JOB_NAME}, build ${env.BUILD_DISPLAY_NAME} - ${currentBuild.currentResult}",
+                body:    """
+                <p>Jenkins job <a href='${env.JOB_URL}'>${env.JOB_NAME}</a> (<a href='${env.BUILD_URL}'>build ${env.BUILD_DISPLAY_NAME}</a>) has result <strong>${currentBuild.currentResult}</strong>!
+                <br>You can view the <a href='${env.BUILD_URL}console'>console log here</a>.</p>
+                <br><strong>new version deploy: ${NEW_TAG} </strong></p>
+                <p>Source code from commit: <a href='${env.GIT_URL}/commit/${env.GIT_COMMIT}'>${env.GIT_COMMIT}</a> (of branch <em>${env.GIT_BRANCH}</em>).</p>
+                <p><img src='https://www.jenkins.io/images/logos/jenkins/jenkins.png' alt='jenkins logo' width='123' height='170'></p>
+                """
+            )
         }
-        emailext (
-            to:      "rotem.devops.test@gmail.com",
-            subject: "Jenkins - ${env.JOB_NAME}, build ${env.BUILD_DISPLAY_NAME} - ${currentBuild.currentResult}",
-            body:    """
-            <p>Jenkins job <a href='${env.JOB_URL}'>${env.JOB_NAME}</a> (<a href='${env.BUILD_URL}'>build ${env.BUILD_DISPLAY_NAME}</a>) has result <strong>${currentBuild.currentResult}</strong>!
-            <br>You can view the <a href='${env.BUILD_URL}console'>console log here</a>.</p>
-            <br><strong>new version deploy: ${NEW_TAG} </strong></p>
-            <p>Source code from commit: <a href='${env.GIT_URL}/commit/${env.GIT_COMMIT}'>${env.GIT_COMMIT}</a> (of branch <em>${env.GIT_BRANCH}</em>).</p>
-            <p><img src='https://www.jenkins.io/images/logos/jenkins/jenkins.png' alt='jenkins logo' width='123' height='170'></p>
-            """
-        )
     
         failure {
             echo "i failed!"
