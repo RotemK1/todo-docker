@@ -18,6 +18,6 @@ FROM Builder as Final
 WORKDIR /home/appuser
 COPY app.py app.py
 COPY templates templates
-COPY static static
+#COPY static static
 
 CMD ["python", "-m", "flask", "run", "--host=0.0.0.0"]
