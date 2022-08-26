@@ -13,13 +13,13 @@ mongodb_port = int(os.environ.get('MONGO_PORT', '27017'))
 
 mongodb_user = os.environ.get('MONGO_USER', 'root')
 mongodb_pass = os.environ.get('MONGO_PASS', 'password')
-if(mongodb_host == 'mongo'):
-	client = MongoClient(mongodb_host, mongodb_port)
-else:
-	client = MongoClient("mongodb://" + mongodb_user + ":" + mongodb_pass + "@" + mongodb_host + ":27017") 
+# if(mongodb_host == 'mongo'):
+# 	client = MongoClient(mongodb_host, mongodb_port)
+# else:
+# 	client = MongoClient("mongodb://" + mongodb_user + ":" + mongodb_pass + "@" + mongodb_host + ":27017") 
 
 
-#client = MongoClient(mongodb_host, mongodb_port)    #Configure the connection to the database
+client = MongoClient(mongodb_host, mongodb_port)    #Configure the connection to the database
 db = client.camp2016    #Select the database
 todos = db.todo #Select the collection
 
