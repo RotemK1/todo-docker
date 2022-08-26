@@ -56,15 +56,15 @@ pipeline {
                         docker.withRegistry("https://644435390668.dkr.ecr.us-east-1.amazonaws.com/rotem-todo-app", "ecr:us-east-1:aws_account"){
                             app_todo = docker.build("-f Dockerfile-app .")
                             if (NEW_TAG.isEmpty()){
-                                NEW_TAG="1.0.0"
-                                app_todo.push("${NEW_TAG}")
+                                app_todo.push("1.0.0")
+                                nginx_app = docker.build("todo-app-nginx:1.0.0", "-f Dockerfile-nginx .")
                             }else{
                                 app_todo.push("${NEW_TAG}")
+                                nginx_app = docker.build("todo-app-nginx:${NEW_TAG}", "-f Dockerfile-nginx .")
                             }
                         }
                         docker.withRegistry("https://644435390668.dkr.ecr.us-east-1.amazonaws.com/todo-app-nginx", "ecr:us-east-1:aws_account"){
-                        nginx_app = docker.build("-f Dockerfile-nginx .")
-                        nginx_app.push("${NEW_TAG}")
+                            nginx_app.push()
                         }
                     }
 
