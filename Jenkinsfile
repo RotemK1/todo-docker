@@ -54,13 +54,17 @@ pipeline {
                         // NEW_TAG = calculate next image tag from ecr repo "rotem-todo-app" in region us-east-1
                         NEW_TAG = sh(script: "aws ecr list-images --repository-name rotem-todo-app --filter --region us-east-1 tagStatus=TAGGED | grep imageTag | awk ' { print \$2 } ' |sort -V | tail -1 | sed 's/\"//g' |tr \".\" \" \" | awk ' { print \$1 \".\" \$2 \".\" \$3+1 } '", returnStdout: true).trim()
                         docker.withRegistry("https://644435390668.dkr.ecr.us-east-1.amazonaws.com/rotem-todo-app", "ecr:us-east-1:aws_account"){
-                            app_todo = docker.build('rotem-todo-app')
+                            app_todo = docker.build("-f Dockerfile-app .")
                             if (NEW_TAG.isEmpty()){
-                                app_todo.push("1.0.0")
-
+                                NEW_TAG="1.0.0"
+                                app_todo.push("${NEW_TAG}")
                             }else{
                                 app_todo.push("${NEW_TAG}")
                             }
+                        }
+                        docker.withRegistry("https://644435390668.dkr.ecr.us-east-1.amazonaws.com/todo-app-nginx", "ecr:us-east-1:aws_account"){
+                        nginx_app = docker.build("-f Dockerfile-nginx .")
+                        nginx_app.push("${NEW_TAG}")
                         }
                     }
 
