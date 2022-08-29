@@ -88,6 +88,7 @@ pipeline {
                                 ls -laF
                                 cd app-helm
                                 yq -i '.flaskapp.image.tag = "${NEW_TAG}"' ./flask-app/values.yaml
+                                yq -i '.apiVersion = "${NEW_TAG}"' ./flask-app/Chart.yaml
                                 
                                 git tag ${NEW_TAG}
                                 git add .
